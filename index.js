@@ -18,17 +18,108 @@ const SUBMISSION = [
 
 ]
 
+app.get('/', (req, res) => {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Signup/Login</title>
+      </head>
+      <body>
+        <h1>Welcome to my App!</h1>
+        <button id="signupBtn">Signup</button>
+        <button id="loginBtn">Login</button>
+
+        <script>
+          const signupBtn = document.getElementById('signupBtn');
+          const loginBtn = document.getElementById('loginBtn');
+
+          signupBtn.addEventListener('click', function() {
+            window.location.href = '/signup';
+          });
+
+          loginBtn.addEventListener('click', function() {
+            window.location.href = '/login';
+          });
+        </script>
+      </body>
+    </html>
+  `;
+  res.send(html);
+});
+
+app.get('/signup' , (req,res) => {
+
+    const html = `
+    <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset = "UTF-8">
+            <title>Authorisation page</title>
+        </head>
+        <body>
+          <h1>Kindly enter your authorization details</h1>
+          <form id = "#signup-form">
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email">
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password">
+
+            <input type="submit" value="Submit">
+           </form>
+
+           <script>
+            const form = document.querySelector('#signup-form');
+
+            form.addEventListener('submit', async (event) => {
+              event.preventDefault();
+
+              const formData = new FormData(form);
+              const response = await fetch('/signup', {
+                method: 'POST',
+                body: formData
+              });
+
+              if (response.ok) {
+                console.log('User signed up successfully');
+              } else {
+                console.error('Failed to sign up user');
+              }
+            });
+          </script>
+
+        </body>
+      </html>
+    `
+    res.send(html);
+})
+
+
 app.post('/signup', function(req, res) {
   // Add logic to decode body
   // body should have email and password
+  const { email, password } = req.body;
 
+  console.log("sending post request to signup function");
 
-  //Store email and password (as is for now) in the USERS array above (only if the user with the given email doesnt exist)
+  // Check if a user with the given email already exists in the USERS array
+  const userExists = USERS.some(user => user.email === email);
 
+  // If a user with the given email already exists, return a 409 (Conflict) status code
+  if (userExists) {
+    res.status(409).send('User already exists');
+    return;
+  }
 
-  // return back 200 status code to the client
-  res.send('Hello World!')
+  // Otherwise, store the email and password in the USERS array
+  USERS.push({ email, password });
+
+  // Return a 200 (OK) status code to the client
+  res.status(200).send('User created successfully');
 })
+
 
 app.post('/login', function(req, res) {
   // Add logic to decode body
